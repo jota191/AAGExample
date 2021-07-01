@@ -23,9 +23,10 @@
 
 %endif
 
+
 > module MF.Core.Syn where
 
-> -- import Expr.Syn hiding (P_Val)
+> import Expr.Syn hiding (P_Val, Add)
 
 > import Language.Grammars.AspectAG
 > import Language.Grammars.AspectAG.TH
@@ -33,17 +34,7 @@
 > import Data.Proxy
 > import Data.Ord
 
-> class Values op v | op -> v, v -> op where
->   ap :: op -> v -> v -> v
->   cmp :: Ordering -> v -> v -> Bool
-> instance Values Op Val where
->   ap Add (I a)(I b) = I $ a+b
->   ap Times (I a)(I b) = I $ a*b
->   cmp LT (I a)(I b) = a < b
-
-> data Op = Add | Times deriving (Eq, Ord, Show)
-> data Val = I Integer deriving (Eq, Ord, Show)
-
+> import MF.Terminals
 
 > type Nt_Core = 'NT "Core"
 > nt_Core = Label @Nt_Core
@@ -91,41 +82,41 @@ TODO: ordenar producciones todas iguales
 >   | CComp (CTerm op v) Ordering (CTerm op v)
 >   deriving (Eq, Show)
 
-> sem_Expr asp (COp l op r :: CTerm op v) =
+> sem_CTerm asp (COp l op r :: CTerm op v) =
 >   knitAspect p_COp asp (
->         ch_COp_l  .=. sem_Expr asp l
+>         ch_COp_l  .=. sem_CTerm asp l
 >    .*.  (ch_COp_op :: Label('Chi "COp_op" P_COp ('Right ('T op)))) .=. sem_Lit @op op
->    .*.  ch_COp_r  .=. sem_Expr asp r
+>    .*.  ch_COp_r  .=. sem_CTerm asp r
 >    .*.  emptyGenRec
 >   )
 
-> sem_Expr asp (CComp l op r) =
+> sem_CTerm asp (CComp l op r) =
 >   knitAspect p_CComp asp (
->         ch_CComp_l  .=. sem_Expr asp l
+>         ch_CComp_l  .=. sem_CTerm asp l
 >    .*.  ch_CComp_op .=. sem_Lit op
->    .*.  ch_CComp_r  .=. sem_Expr asp r
+>    .*.  ch_CComp_r  .=. sem_CTerm asp r
 >    .*.  emptyGenRec
 >   )
 
-> sem_Expr asp (CVal v :: CTerm op v) =
+> sem_CTerm asp (CVal v :: CTerm op v) =
 >   knitAspect p_CVal asp (
 >    (ch_CVal_val :: Label('Chi "CVal_val" P_CVal ('Right ('T v))))
 >              .=. sem_Lit @v v .*. emptyGenRec)
 
-> sem_Expr asp (CVar v) =
+> sem_CTerm asp (CVar v) =
 >   knitAspect p_CVar asp (ch_CVar_var .=. sem_Lit v .*. emptyGenRec)
 
-> sem_Expr asp (CApp l r) =
+> sem_CTerm asp (CApp l r) =
 >   knitAspect p_CApp asp (
->         ch_CApp_l  .=. sem_Expr asp l
->    .*.  ch_CApp_r  .=. sem_Expr asp r
+>         ch_CApp_l  .=. sem_CTerm asp l
+>    .*.  ch_CApp_r  .=. sem_CTerm asp r
 >    .*.  emptyGenRec
 >   )
 
-> sem_Expr asp (CLam x e) =
+> sem_CTerm asp (CLam x e) =
 >   knitAspect p_CLam asp (
 >         ch_CLam_binder  .=. sem_Lit x
->    .*.  ch_CLam_body    .=. sem_Expr asp e
+>    .*.  ch_CLam_body    .=. sem_CTerm asp e
 >    .*.  emptyGenRec
 >   )
 
@@ -149,19 +140,34 @@ TODO: ordenar producciones todas iguales
 
 > cterm_id :: Values op v => CTerm op v -> CTerm op v
 > cterm_id (e :: CTerm op v)
->   = sem_Expr (asp_core_id (Proxy @v)) e emptyAtt #. (self @v)
+>   = sem_CTerm (asp_core_id (Proxy @v)) e emptyAtt #. (self @v)
 
 
 examples:
 
 > ap3 f a b c = CApp (CApp (CApp f a) b) c
+> ap2 f a b = CApp (CApp f a) b
 
-> ite :: CTerm Op Val
+> tt = CLam "T" $ CLam "F" $ CVar "T"
+> ff = CLam "T" $ CLam "F" $ CVar "F"
+
 > ite = CLam "C" $ CLam "T" $ CLam "E" $
 >     CApp (CApp (CVar "C")(CVar "T")) (CVar "E")
-> fac :: CTerm Op Val
+
+> neg = CLam "E" $ CLam "T" $ CLam "F"
+>   $ ap2 (CVar "E")(CVar "F")(CVar "T")
+
+> conj = CLam "L" $ CLam "R" $
+>   ap3 ite (CVar "L")(CVar "R") ff
+
+
 > fac = CLam "n" $ ap3 ite (CComp (CVar "n") LT (CVal $ I 1))
 >                          (CVal $ I 1)
 >                          (COp (CVar "n") Times (CApp (CVar "fac")
 >                                                (COp (CVar "n") Add
 >                                                     (CVal $ I (-1)))))
+
+
+> tup2 =CLam "X" $ CLam "Y" $ CLam "T"
+>      $ ap2 (CVar "T")(CVar "X") (CVar "Y") 
+> swap = CLam "x" $ CLam "y" $ ap2 tup2 (CVar "x")(CVar "y")
