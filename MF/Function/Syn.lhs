@@ -82,9 +82,9 @@
 > type P_ProgramNil  = 'Prd "ProgramNil" Nt_Program
 > p_ProgramNil = Label @ P_ProgramNil
 
-> ch_ProgramCons_last
+> ch_ProgramSnoc_last
 >   = Label @ ('Chi "ProgramSnoc_last" P_ProgramSnoc (NonTerminal Nt_FDef))
-> ch_ProgramCons_init
+> ch_ProgramSnoc_init
 >   = Label @ ('Chi "ProgramSnoc_init" P_ProgramSnoc (NonTerminal Nt_Program))
 > ch_ProgramNil
 >   = Label @ ('Chi "ProgramSnoc_nil" P_ProgramNil (Terminal ()))
@@ -139,3 +139,13 @@
 >     ch_FDef_ecu .=. fe .*.
 >     emptyGenRec
 >   )
+
+
+> sem_Program_PNil asp =
+>   knit Proxy asp emptyGenRec
+
+> sem_Program_PSnoc asp fs f =
+>   knit Proxy asp (
+>     ch_ProgramSnoc_init .=. fs .*.
+>     ch_ProgramSnoc_last .=. f .*. 
+>   emptyGenRec)

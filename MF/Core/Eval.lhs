@@ -34,7 +34,7 @@
 > import Data.Map as M
 > import Data.Ord
 
-> import MF.Terminals
+> import MF.Terminals.Values
 
 Let us build substitutions
 

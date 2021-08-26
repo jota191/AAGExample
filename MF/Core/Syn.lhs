@@ -34,7 +34,7 @@
 > import Data.Proxy
 > import Data.Ord
 
-> import MF.Terminals
+> import MF.Terminals.Values
 
 > type Nt_Core = 'NT "Core"
 > nt_Core = Label @Nt_Core

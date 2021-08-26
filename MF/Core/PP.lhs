@@ -35,7 +35,7 @@
 > import Data.Map as M
 > import Data.Ord
 
-> import MF.Terminals
+> import MF.Terminals.Values
 
 > spp = Label @('Att "spp" String)
 > asp_spp = \(Proxy :: Proxy v) -> 

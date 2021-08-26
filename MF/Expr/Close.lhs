@@ -24,12 +24,11 @@
 >              UndecidableInstances
 > #-}
 
-%endif
 
 > module MF.Expr.Close where
 
 > import MF.Expr.Syn
-> import MF.Terminals
+> import MF.Terminals.Values
 > import Data.Proxy
 
 > import Text.Parsec
@@ -157,5 +156,36 @@
 > sem_Expr sem@(SemExpr op var val call) v@(Call f e)
 >   = sem_Expr_Call (call (proxyFrom v)) f (sem_Expr sem e)
 
-> compile (e :: Expr Val)
+> compileExpr  (e :: Expr Val)
 >  = sem_Expr semCompExpr e emptyAtt #. (scomp @Val)
+
+%endif
+
+
+> pVarDT 
+>   = Var <$> m_identifier
+
+> pCallDT = do
+>   f <- m_identifier
+>   x <- m_parens (pExprDT)
+>   return $ Call f x
+ 
+> tableDT=
+>   [[P.Infix (m_reservedOp "*"
+>        >> return (flip Op Times)) AssocLeft]
+>    ,[P.Infix (m_reservedOp "+"
+>        >> return (flip Op Add)) AssocLeft]
+>    ,[P.Infix (m_reservedOp "-"
+>        >> return (flip Op Minus)) AssocLeft]
+>   ]
+
+> pValDT = do
+>   n <- m_natural
+>   return $ Val (mki @_ @Val n)
+
+> pExprAuxDT =
+>   choice [try pCallDT, pVarDT , m_parens (pExprDT), pValDT]
+
+> pExprDT =
+>   buildExpressionParser (tableDT) (pExprAuxDT) <?> "expression"
+

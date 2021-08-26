@@ -35,7 +35,7 @@
 > import Language.Grammars.AspectAG
 > import Data.Proxy 
 
-> import MF.Terminals
+> import MF.Terminals.Values
 
 Compile Expressions to core language
 
@@ -66,7 +66,7 @@ Compile Expressions to core language
 
 > proxyVal = Proxy @Val
 > test1 = sem_Expr_Op (scomp_op proxyVal) (sem_Expr_Val (scomp_val proxyVal) (I 3))
->          MF.Terminals.Add
+>          MF.Terminals.Values.Add
 >         (sem_Expr_Call (scomp_call proxyVal) "dup"
 >                  (sem_Expr_Var (scomp_var proxyVal) "x")) emptyAtt #. (scomp @Val)
 

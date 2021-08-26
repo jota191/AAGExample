@@ -11,11 +11,10 @@ following grammar:
 
 \noindent
 where |Int| and |String| are terminals corresponding to integer values
-and variable names, respectively. Both are said to be \emph{children}
-in their productions.  In the third production there are two children
-|expr_l| and |expr_r|, both occurrences of the non-terminal
-|expr|. They have different names (the indexes l and r) so that we can
-refer to each one unambiguously.
+and variable names, respectively. In the third production there are
+two non-terminal symbols. The indexes (|l|, |r|, |var|, |val|) are
+names for each symbol occurence (children) so that we can refer to
+each one unambiguously.
 
 
 \subsection{Grammar implementation in AspectAG}

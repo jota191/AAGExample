@@ -36,7 +36,7 @@
 > import Data.Ord
 > import Data.Proxy
 
-> import MF.Terminals ---
+> import MF.Terminals.Values
 
 > import qualified Data.Map as M
 
@@ -84,7 +84,7 @@
 
 
 > spcomp :: forall v op . Values op v
->   => Label ('Att "fcompile" (M.Map String (CTerm op v)))
+>   => Label ('Att "pcompile" (M.Map String (CTerm op v)))
 > spcomp = Label
 
 > spcomp_nil = \(Proxy :: Proxy v) ->
@@ -92,7 +92,7 @@
 
 > spcomp_snoc = \(Proxy :: Proxy v) ->
 >   syn (spcomp @ v) p_ProgramSnoc (do
->    fenv <-  at ch_ProgramCons_init (spcomp @v)
->    (f, ecu) <- at ch_ProgramCons_init (sfcomp @v)
+>    fenv <-  at ch_ProgramSnoc_init (spcomp @v)
+>    (f, ecu) <- at ch_ProgramSnoc_last (sfcomp @v)
 >    return $ M.insert f ecu fenv
 >   )
